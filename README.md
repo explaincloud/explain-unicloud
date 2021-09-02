@@ -2,7 +2,7 @@
 
 快速、极简的uniCloud云函数开发框架。已支持云函数URL化。已支持RESTful。
 
-加入QQ群：[970799055](https://jq.qq.com/?_wv=1027&k=KFkDL5gp)。
+框架交流QQ群：[970799055](https://jq.qq.com/?_wv=1027&k=KFkDL5gp)。
 
 ## 目录结构
 ```
@@ -11,7 +11,7 @@
 |   |   └── explain-unicloud
 |   └── application 业务逻辑函数目录
 |       ├── filters 过滤器
-|       ├── html 视图页
+|       ├── views 视图页
 |       ├── services 云函数集
 |       ├── startup.js 启动配置、路由配置、中间件、过滤器配置等
 |       └── index.js 云函数入口

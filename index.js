@@ -1,3 +1,10 @@
+//---------------------------------------------------------------------
+// github        https://github.com/explaincloud/explain-unicloud
+// organization  Explain Cloud
+// author        Sansnn
+// license       MIT
+//---------------------------------------------------------------------
+
 "use strict";
 
 module.exports = {
