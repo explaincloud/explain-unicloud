@@ -29,5 +29,11 @@ module.exports.use = async ({
 			}
 		}
 		await next(0);
+	} else {
+		await invoke({
+			event,
+			context,
+			explain
+		});
 	}
 }

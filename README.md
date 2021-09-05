@@ -1,21 +1,34 @@
 # EXPLAIN-UNICLOUD
 
-快速、极简的uniCloud云函数开发框架。已支持云函数URL化。已支持RESTful。
+快速、极简的uniCloud云函数开发框架。已支持云函数URL化，已支持RESTful。
 
 框架交流QQ群：[970799055](https://jq.qq.com/?_wv=1027&k=KFkDL5gp)。
 
-## 目录结构
+## 示例项目目录结构
 ```
 ┌── cloudfunctions 云函数目录
 |   ├── common 云函数公共模块
-|   |   └── explain-unicloud
-|   └── application 业务逻辑函数目录
-|       ├── filters 过滤器
-|       ├── views 视图页
-|       ├── services 云函数集
+|   |   └── explain-unicloud 核心框架
+|   |   └── explain-validator 数据校验器模块
+|   |   └── explain-unicloud-mvc MVC模块
+|   ├── app 普通应用目录
+|   |   ├── index.js 云函数入口
+|   |   ├── startup.js 启动配置、路由配置、中间件、过滤器配置等
+|   |   ├── services 云函数集
+|   |   ├── filters 过滤器
+|   |   ├── schemas JSON Schema目录
+|   |   └── views 视图页
+|   └── mvc MVC应用目录
+|       ├── index.js 云函数入口
 |       ├── startup.js 启动配置、路由配置、中间件、过滤器配置等
-|       └── index.js 云函数入口
-└──
+|       ├── models 模型
+|       ├── views 视图
+|       └── controllers 控制器
+├── js_sdk
+|   └── explain-creq 云函数和http请求模块
+└── common
+    ├── creq.interceptor.callfunction 云函数请求拦截器配置
+    └── creq.interceptor.request http请求拦截器配置
 ```
 
 ## 使用方式
@@ -28,7 +41,7 @@
 
 #### 云函数入口
 ```javascript
-// application -> index.js
+// app -> index.js
 
 const explain = require("explain-unicloud");
 
@@ -42,7 +55,7 @@ exports.main = async (event, context) => explain.run({
 ```
 #### 云函数
 ```javascript
-// application -> services -> values.js
+// app -> services -> values.js
 
 // 继承抽象父类explain.service，无需写构造函数即可调用this.event，this.context，this.explain
 
@@ -59,7 +72,7 @@ module.exports = class home extends explain.service {
 #### 前端
 ```javascript
 uniCloud.callFunction({
-	name: 'application',
+	name: 'app',
 	data: {
 		service: 'values',
 		action: 'getValuesAsync',
@@ -68,13 +81,15 @@ uniCloud.callFunction({
 }).then(res => {
 	console.log(res)
 })
+```
 
-推荐使用explain-unicloud封装的调用方式
+推荐使用`explain-creq`，封装了请求拦截器，响应拦截器和错误拦截器，可自由定制请求数据处理和响应结果处理
 
-import cloud from '@/uni_modules/explain-unicloud/common/cloud.js'
+```javascript
+import creq from '@/uni_modules/explain-creq/js_sdk/explain-creq.js'
 
-cloud.callFunction('values', 'getValuesAsync', {
-	name: 'application', // 指定云函数名称
+creq.callFunction('values', 'getValuesAsync', {
+	name: 'app', // 指定云函数名称
 	data: {} // 请求参数
 }).then(res => {
 	console.log(res)
@@ -83,7 +98,7 @@ cloud.callFunction('values', 'getValuesAsync', {
 ### 路由模式
 #### 云函数入口
 ```javascript
-// application -> index.js
+// app -> index.js
 
 const explain = require("explain-unicloud");
 
@@ -207,7 +222,7 @@ exports.main = async (event, context) => explain.run({
 ```
 #### 云函数
 ```javascript
-// application -> services -> values.js
+// app -> services -> values.js
 
 // 继承抽象父类explain.service，无需写构造函数即可调用this.event，this.context，this.explain
 
@@ -301,12 +316,12 @@ module.exports = class values extends explain.service {
 
 }
 
-更多示例请前往目录uniCloud -> cloudfunctions -> application -> services中查看
+更多示例请前往目录uniCloud -> cloudfunctions -> app -> services中查看
 ```
 #### 前端
 ```javascript
 uni.request({
-	url: 'https://bf8a7863-05e5-4434-b055-db8a558bafc9.bspapp.com/http/app/api/values',
+	url: 'http://tcb-e386czuna1dv2wib7e6bd-d064f3.service.tcloudbase.com/http/app/api/values',
 	method: 'post',
 	data: {
 		name: 'Sansnn',
@@ -316,12 +331,14 @@ uni.request({
 		console.log(res)
 	}
 })
+```
 
-推荐使用explain-unicloud封装的调用方式
+推荐使用`explain-creq`，封装了请求拦截器，响应拦截器和错误拦截器，可自由定制请求数据处理和响应结果处理
 
-import cloud from '@/uni_modules/explain-unicloud/common/cloud.js'
+```javascript
+import creq from '@/uni_modules/explain-creq/js_sdk/explain-creq.js'
 
-cloud.request('https://bf8a7863-05e5-4434-b055-db8a558bafc9.bspapp.com/http/app/api/values', 'post', {
+creq.request('http://tcb-e386czuna1dv2wib7e6bd-d064f3.service.tcloudbase.com/http/app/api/values', 'post', {
 	data: {
 		name: 'Sansnn',
 		like: ['explain-unicloud', 'explain-admin']
@@ -335,18 +352,18 @@ cloud.request('https://bf8a7863-05e5-4434-b055-db8a558bafc9.bspapp.com/http/app/
 
 ## 云函数URL化（仅支持路由模式）
 #### 示例
-> 腾讯云 GET https://${spaceId}.service.tcloudbase.com/${path}/api/values?a=1&b=2
+> 腾讯云 GET http://${spaceId}.service.tcloudbase.com/${path}/api/values?a=1&b=2
 
 > 阿里云 GET https://${spaceId}.bspapp.com/${path}/api/values?a=1&b=2
 
-> 完整参考 GET https://bf8a7863-05e5-4434-b055-db8a558bafc9.bspapp.com/http/app/api/values
+> 完整参考 GET http://tcb-e386czuna1dv2wib7e6bd-d064f3.service.tcloudbase.com/http/app/api/values
 
 ## 使用中间件
 执行顺序为使用中间件时的顺序，先使用的先执行，后使用的后执行。
 ### app.use()
 ### 示例
 ```javascript
-// application -> startup.js
+// app -> startup.js
 
 module.exports = (app) => {
 
@@ -402,7 +419,7 @@ module.exports = (app) => {
 ### 示例：实现用户身份验证
 #### 云函数入口
 ```javascript
-// application -> startup.js
+// app -> startup.js
 
 module.exports = (app) => {
 
@@ -428,7 +445,7 @@ module.exports = (app) => {
 ```
 #### 过滤器代码
 ```javascript
-// application -> filters -> tokenFilter.js
+// app -> filters -> tokenFilter.js
 
 // 需要继承抽象父类explain.filter
 
@@ -470,7 +487,7 @@ module.exports = class tokenFilter extends explain.filter {
 ```
 #### 云函数
 ```javascript
-// application -> services -> test.js
+// app -> services -> test.js
 
 const explain = require("explain-unicloud");
 
@@ -492,7 +509,7 @@ module.exports = class test extends explain.service {
 ### 示例：实现请求日志记录
 #### 云函数入口
 ```javascript
-// application -> startup.js
+// app -> startup.js
 
 module.exports = (app) => {
 
@@ -513,7 +530,7 @@ module.exports = (app) => {
 ```
 #### 过滤器代码
 ```javascript
-// application -> filters -> requestFilter.js
+// app -> filters -> requestFilter.js
 
 // 需要继承抽象父类explain.filter
 
@@ -593,7 +610,7 @@ module.exports = class requestFilter extends explain.filter {
 ### 示例：实现全局异常处理
 #### 云函数入口
 ```javascript
-// application -> startup.js
+// app -> startup.js
 
 module.exports = (app) => {
 
@@ -610,7 +627,7 @@ module.exports = (app) => {
 ```
 #### 过滤器代码
 ```javascript
-// application -> filters -> exceptionFilter.js
+// app -> filters -> exceptionFilter.js
 
 // 需要继承抽象父类explain.filter
 
